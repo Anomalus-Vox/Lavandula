@@ -135,7 +135,7 @@ SMODS.Consumable{
     cost = 4,
 
     use = function(self, card, area, copier)
-        if (pseudorandom("auroraborealis") < (G.GAME.probabilities.normal/200)) then
+        if (pseudorandom("auroraborealis") < (G.GAME.probabilities.normal/150)) then
             SMODS.add_card({key = "j_pride_bridget"})
         else
         SMODS.add_card({set = "Lavender"})
@@ -152,9 +152,8 @@ SMODS.Joker{
     key = 'mlmpride',
     loc_txt= {
         name = 'MLM Pride',
-        text = {  "If your scored hand is",
-        "a {C:attention}Pair of Kings{},",
-        "gain {C:chips}+#1# Chips{}.",
+        text = {  "If your scored hand contains",
+        "a {C:attention}Pair of Kings{}, gain {C:chips}+#1# Chips{}.",
         "{C:inactive}(Currently {C:chips}+#2#{C:inactive} Chips){}",
         "{C:inactive,s:0.6}\"...and they were roommates.\"" -- Vine meme
     }},
@@ -170,12 +169,12 @@ SMODS.Joker{
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = {chips = 0, add = 20}},
+    config = { extra = {chips = 0, add = 8}},
     loc_vars = function(self, info_queue, center)
 		return { vars = { center.ability.extra.add , center.ability.extra.chips}  }
 	end,
     calculate = function(self, card, context) 
-        if context.before and context.scoring_name == 'Pair' and not context.blueprint then
+        if context.before and not context.blueprint then
             local gaysintheclub = 0
             if next(SMODS.find_card('j_pride_genderfluid')) then
                 for i = 1, #context.full_hand do
@@ -211,9 +210,8 @@ SMODS.Joker{
     key = 'lesbianpride',
     loc_txt= {
         name = 'Lesbian Pride',
-        text = {  "If your scored hand is",
-        "a {C:attention}Pair of Queens{},",
-        "gain {C:mult}+#1# Mult{}.",
+        text = {  "If your scored hand contains",
+        "a {C:attention}Pair of Queens{}, gain {C:mult}+#1# Mult{}.",
         "{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
         "{C:inactive,s:0.6}\"Break out the L-word.\"" --Scott Pilgrim vs The World
     }},
@@ -229,12 +227,12 @@ SMODS.Joker{
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = {mult = 0, add = 4}},
+    config = { extra = {mult = 0, add = 2}},
     loc_vars = function(self, info_queue, center)
 		return { vars = { center.ability.extra.add , center.ability.extra.mult}  }
 	end,
     calculate = function(self, card, context) 
-        if context.before and context.scoring_name == 'Pair' and not context.blueprint then
+        if context.before and not context.blueprint then
             local gaysintheclub = 0
             if next(SMODS.find_card('j_pride_genderfluid')) then
                 for i = 1, #context.full_hand do
@@ -458,7 +456,7 @@ SMODS.Joker{
     loc_txt= {
         name = 'New Vegas Strip',
         text = {  "If your played cards equal {C:attention}21{},",
-        "this gives {C:money}$#3#{} and gains {X:chips,C:white}X0.125{} Chips.",
+        "this gives {C:money}$#3#{} and gains {X:chips,C:white}X#1#{} Chips.",
         "{C:inactive}(Currently {X:chips,C:white}X#2#{C:inactive} Chips)",
         "{C:inactive,s:0.8}[Faces are 10, Aces are 1 or 11.]{}",
         "{C:inactive,s:0.6}\"The game was rigged from the start.\""} --Fallout New Vegas
@@ -475,7 +473,7 @@ SMODS.Joker{
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = {xbonus = 1, xadd = 0.125, rev = 3}},
+    config = { extra = {xbonus = 1, xadd = 0.2, rev = 3}},
     loc_vars = function(self, info_queue, center)
 		return { vars = { center.ability.extra.xadd , center.ability.extra.xbonus, center.ability.extra.rev }  }
 	end,
@@ -658,15 +656,14 @@ SMODS.Joker{
     key = 'pronouns',
     loc_txt= {
         name = 'Pronoun Pin',
-        text = {  "Cards with {C:attention}seals{} give {X:chips,C:white}x1.2{} Chips when played.",
+        text = {  "If a vanilla Seal will trigger, this gains {X:chips,C:white}X#1#{} Chips.",
+        "{C:inactive}(Currently {X:chips,C:white}X#2#{C:inactive} Chips)",
         "{C:inactive,s:0.6}\"damn ya ass fat what's ya pronouns\"" -- meme from social media dms
-
-
     }},
     atlas = 'prideJ',
     pos = { x = 4, y = 3 },
-    rarity = 1,
-    cost = 6,
+    rarity = 2,
+    cost = 7,
     pools = {["Prideful"] = true},
     
     unlocked = true,
@@ -675,18 +672,28 @@ SMODS.Joker{
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = {xchip = 1.2}},
+    config = { extra = {xchip = 0.2, chip = 1}},
     loc_vars = function(self, info_queue, center)
-		return { vars = { center.ability.extra.xchip }  }
+		return { vars = { center.ability.extra.xchip, center.ability.extra.chip }  }
 	end,
     calculate = function(self, card, context)
-        if context.individual and context.cardarea == G.play then     
-            if context.other_card.seal then
-                return {
-                    x_chips = card.ability.extra.xchip,
-                    card = context.other_card
-                }
-            end
+        _card = card
+        if context.joker_main then
+            return {
+                x_chips = card.ability.extra.chip
+            }
+        elseif context.repetition and not context.blueprint and context.cardarea == G.play and not context.other_card.debuff and context.other_card.seal == "Red" then
+            card.ability.extra.chip = card.ability.extra.chip + card.ability.extra.xchip
+            SMODS.calculate_effect({message = 'X'..card.ability.extra.chip, colour = G.C.GREEN}, card)
+        elseif context.individual and not context.blueprint and context.cardarea == G.play and not context.other_card.debuff and context.other_card.seal == "Gold" then
+            card.ability.extra.chip = card.ability.extra.chip + card.ability.extra.xchip
+            SMODS.calculate_effect({message = 'X'..card.ability.extra.chip, colour = G.C.GREEN}, card)
+        elseif context.discard and not context.blueprint and not context.other_card.debuff and context.other_card.seal == "Purple" then
+            card.ability.extra.chip = card.ability.extra.chip + card.ability.extra.xchip
+            SMODS.calculate_effect({message = 'X'..card.ability.extra.chip, colour = G.C.GREEN}, card)
+        elseif context.end_of_round and context.individual and context.cardarea == G.hand and not context.blueprint and not context.other_card.debuff and context.other_card.seal == "Blue" then
+            card.ability.extra.chip = card.ability.extra.chip + card.ability.extra.xchip
+            SMODS.calculate_effect({message = 'X'..card.ability.extra.chip, colour = G.C.GREEN}, card)
         end
     end
 }
@@ -1072,10 +1079,175 @@ SMODS.Joker{
     end
 }
 
--- end of file --
 
 
+--[[ PATCH 1 JOKERS -- DONT FOGET TO ADD TO LAVENDER TYPE
 
+SMODS.Joker {
+    key = "gaydar",
+    loc_txt= {
+        name = 'Rainbow Radar',
+        text = { "If a scored card has an edition, 1 in ?",
+        "chance to copy it to a card held in hand. (WIP)",
+        "{C:inactive,s:0.6}\"todo\""}
+    },
+    atlas = "prideJ",
+    pos = { x = 0, y = 0 },
+    rarity = 1,
+    cost = 2,
+    pools = {["Prideful"] = true},
+
+    unlocked = true,
+    discovered = true,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+
+    config = { extra = { mult = 4 }, },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.mult } }
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main then
+            return {
+                mult = card.ability.extra.mult
+            }
+        end
+    end
+}
+
+SMODS.Joker {
+    key = "closet",
+    loc_txt= {
+        name = 'Walk-in Closet',
+        text = { "Discarded cards have a 1 in ? chance to gain an edition. (WIP)",
+        "{C:inactive,s:0.6}\"todo\""}
+    },
+    atlas = "prideJ",
+    pos = { x = 0, y = 0 },
+    rarity = 1,
+    cost = 2,
+    pools = {["Prideful"] = true},
+    
+    unlocked = true,
+    discovered = true,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+
+    config = { extra = { mult = 4 }, },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.mult } }
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main then
+            return {
+                mult = card.ability.extra.mult
+            }
+        end
+    end
+}
+
+SMODS.Joker {
+    key = "bifocals",
+    loc_txt= {
+        name = 'Bi-focals',
+        text = { "Adds ?% of Mult to Chips, or ?% of Chips to Mult, whichever is higher.",
+        "{C:inactive,s:0.6}\"todo\""}
+    },
+    atlas = "prideJ",
+    pos = { x = 0, y = 0 },
+    rarity = 1,
+    cost = 2,
+    pools = {["Prideful"] = true},
+    
+    unlocked = true,
+    discovered = true,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+
+    config = { extra = { mult = 4 }, },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.mult } }
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main then
+            return {
+                mult = card.ability.extra.mult
+            }
+        end
+    end
+}
+
+SMODS.Joker {
+    key = "respectexistence",
+    loc_txt= {
+        name = 'Respect Existence',
+        text = { "If a playing card would be destroyed,",
+        "copy it to your deck with a random edition (WIP)",
+        "{C:inactive,s:0.6}\"Do no harm...\""}
+    },
+    atlas = "prideJ",
+    pos = { x = 0, y = 0 },
+    rarity = 1,
+    cost = 2,
+    pools = {["Prideful"] = true},
+    
+    unlocked = true,
+    discovered = true,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+
+    config = { extra = { mult = 4 }, },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.mult } }
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main then
+            return {
+                mult = card.ability.extra.mult
+            }
+        end
+    end
+}
+
+SMODS.Joker { -- MOVE DOWN, SECRET, CONVERTS FROM ABOVE ON 15+ CARDS W EDITION IN DECK
+    key = "expectresistance",
+    loc_txt= {
+        name = 'Expect Resistance',
+        text = { "Cards with editions cannot be debuffed.",
+        "{C:inactive,s:0.6}\"...and take no shit.\""}
+    },
+    atlas = "prideJ"
+    pos = { x = 0, y = 0 },
+    rarity = "pride_Secret",
+    cost = 2,
+    pools = {["Prideful"] = true},
+    
+    unlocked = true,
+    discovered = true,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+    no_collection = true,
+
+    config = { extra = { mult = 4 }, },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.mult } }
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main then
+            return {
+                mult = card.ability.extra.mult
+            }
+        end
+    end
+}
+
+
+]]
 
 
 
@@ -1256,9 +1428,10 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+
 
     config = { extra = {mult = 0, add = 6}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
@@ -1294,9 +1467,11 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+    no_collection = true,
+
     config = { extra = {prob = 2, dosh = 2}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
 		return { vars = { center.ability.extra.prob , center.ability.extra.dosh, G.GAME.probabilities.normal }  }
@@ -1331,10 +1506,11 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
- 
+    no_collection = true,
+
     config = { extra = {mult = 5, chips = 25}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
 		return { vars = { center.ability.extra.chips , center.ability.extra.mult }  }
@@ -1372,9 +1548,10 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+        no_collection = true,
 
     config = { extra = {chips = 0, selfmult = 2}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
@@ -1413,9 +1590,10 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+        no_collection = true,
 
     config = { extra = {chips = 50}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
@@ -1451,9 +1629,10 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+        no_collection = true,
 
     config = { extra = {xmult = 3}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
@@ -1488,9 +1667,10 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+        no_collection = true,
 
     config = { extra = {redo = 3}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
@@ -1524,9 +1704,10 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
+    no_collection = true,
 
     config = { extra = {xmult = 7}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
@@ -1563,10 +1744,10 @@ SMODS.Joker{
     
     unlocked = true,
     discovered = false,
-    blueprint_compat = false,
+    blueprint_compat = true,
     eternal_compat = true,
     perishable_compat = true,
-
+    no_collection = true,
     config = { extra = {mult = 10}},--todo, lookup how to do probabilities
     loc_vars = function(self, info_queue, center)
 		return { vars = {center.ability.extra.mult}  }

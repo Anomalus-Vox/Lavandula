@@ -63,6 +63,10 @@ payload = '''
       for j=1, #hand do
         if hand[i]:is_face() and hand[j]:is_face() and i ~= j and next(find_joker("j_pride_genderfluid")) then
             table.insert(curr, hand[j])
+        elseif hand[i]:get_id() == 2 and hand[j]:get_id() == 10 and i ~= j and next(find_joker("j_pride_nonbinary")) then
+            table.insert(curr, hand[j])
+        elseif hand[i]:get_id() == 10 and hand[j]:get_id() == 2 and i ~= j and next(find_joker("j_pride_nonbinary")) then
+            table.insert(curr, hand[j])
         elseif hand[i]:get_id() == hand[j]:get_id() and i ~= j then
           table.insert(curr, hand[j])
         end
@@ -81,6 +85,8 @@ position = "at"
 payload = '''
         if next(find_joker("j_pride_genderfluid")) and curr[1]:is_face() then
             vals[13] = curr
+        elseif next(find_joker("j_pride_nonbinary")) and curr[1]:get_id() == (2 or 10) then
+            vals[10] = curr
         else
             vals[curr[1]:get_id()] = curr
         end
