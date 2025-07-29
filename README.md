@@ -3,7 +3,7 @@ Lavandula
 A Pride mod for Balatro
 
 Current Features:
-- 20+ new Jokers!
+- 25+ new Jokers!
 - 2 new Spectral Cards: Estradiol and Testosterone!
 - 1 new Tarot: Aurora!
 - Secrets to discover!
