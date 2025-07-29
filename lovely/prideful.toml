@@ -93,3 +93,16 @@ payload = '''
 '''
 match_indent = false
 times = 1
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.perishable and self.ability.perish_tally <= 0 then'''
+match_indent = true
+position = 'before'
+payload = '''
+if next(SMODS.find_card('j_pride_expectresistance')) and self.edition then
+    self.debuff = false
+    return
+end
+'''

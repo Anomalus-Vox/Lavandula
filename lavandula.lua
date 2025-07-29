@@ -30,7 +30,8 @@ SMODS.ObjectType{
 	cards = { 
         ["j_pride_lesbianpride"] = true, ["j_pride_acepride"] = true, ["j_pride_progresspride"] = true, ["j_pride_genderfluid"] = true, ["j_pride_nonbinary"] = true, ["j_pride_parade"] = true, 
         ["j_pride_fonv"] = true, ["j_pride_topsurg"] = true, ["j_pride_orchi"] = true, ["j_pride_stonewall"] = true, ["j_pride_pronouns"] = true, ["j_pride_celestialmt"] = true, 
-        ["j_pride_diva"] = true, ["j_pride_lgbtqplus"] = true, ["j_pride_doublerainbow"] = true, ["j_pride_blahaj"] = true, ["j_pride_gospinny"] = true, ["j_pride_polycule"] = true, ["j_pride_rainbowcap"] = true
+        ["j_pride_diva"] = true, ["j_pride_lgbtqplus"] = true, ["j_pride_doublerainbow"] = true, ["j_pride_blahaj"] = true, ["j_pride_gospinny"] = true, ["j_pride_polycule"] = true, ["j_pride_rainbowcap"] = true,
+        ["j_pride_gaydar"] = true, ["j_pride_bifocals"] = true, ["j_pride_closet"] = true, ["j_pride_respectexistence"] = true
 	}
 }
 
@@ -745,9 +746,8 @@ SMODS.Joker{
         text = {  "Played cards used in scoring have a",
         "{C:green}#3# in #2#{} chance to gain a random {C:attention}enhancement{} and",
         "a {C:green}#3# in #1#{} to gain a random {C:dark_edition}edition{}.",
-        "{C:inactive}(if they do not already have one)",
+        "{C:inactive}(does not take effect on hand played)",
         "{C:inactive,s:0.6}\"Sparkle on!\"" --Jerma Sparkle On gif
-
     }},
     atlas = 'prideJ',
     pos = { x = 0, y = 3 },
@@ -906,7 +906,7 @@ SMODS.Joker{
         name = 'Shark Attack',
         text = { "Whenever one or more", 
                 "playing cards are destroyed,",
-                "gain {C:mult}+#1#{} Mult.",                     
+                "gain {C:mult}+#1#{} Mult for each card removed.",                     
                 "{C:inactive}(Currently {C:mult}+#2#{C:inactive} Mult){}",
                 "{C:inactive,s:0.6}\"Blåhaj Blast!\"" --baja blast
     }},
@@ -922,7 +922,7 @@ SMODS.Joker{
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = {mult = 0, add = 6}},
+    config = { extra = {mult = 0, add = 4}},
     loc_vars = function(self, info_queue, center)
 		return { vars = { center.ability.extra.add , center.ability.extra.mult}  }
 	end,
@@ -936,11 +936,11 @@ SMODS.Joker{
     if context.remove_playing_cards and not context.blueprint then
             for k, val in ipairs(context.removed) do
                 card.ability.extra.mult = card.ability.extra.mult + card.ability.extra.add
-                return {
-                    message = "Nom!",
-                    colour = G.C.BLUE
-                }
             end
+            return {
+                message = "Nom!",
+                colour = G.C.BLUE
+            }
         end
     end
 }
@@ -1081,20 +1081,20 @@ SMODS.Joker{
 
 
 
---[[ PATCH 1 JOKERS -- DONT FOGET TO ADD TO LAVENDER TYPE
+-- PATCH 1 JOKERS -- DONT FORGET TO ADD TO LAVENDER TYPE
 
 SMODS.Joker {
     key = "gaydar",
     loc_txt= {
         name = 'Rainbow Radar',
-        text = { "If a scored card has an edition, 1 in ?",
-        "chance to copy it to a card held in hand. (WIP)",
-        "{C:inactive,s:0.6}\"todo\""}
+        text = { "If a scored card has an {C:dark_edition}edition{}, {C:green}#1# in #2#",
+        "chance to {C:attention}copy{} it to a random card held in hand.",
+        "{C:inactive,s:0.6}\"Are they, you know...\""} -- usually used to insinuate LGBT-ness in others
     },
     atlas = "prideJ",
-    pos = { x = 0, y = 0 },
+    pos = { x = 0, y = 7 },
     rarity = 1,
-    cost = 2,
+    cost = 5,
     pools = {["Prideful"] = true},
 
     unlocked = true,
@@ -1103,15 +1103,22 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = { mult = 4 }, },
+    config = { extra = { odds = 5 }, },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.mult } }
+        return { vars = { G.GAME.probabilities.normal, card.ability.extra.odds } }
     end,
     calculate = function(self, card, context)
-        if context.joker_main then
-            return {
-                mult = card.ability.extra.mult
-            }
+        if context.before then
+            for i = 1, #context.scoring_hand do
+                if context.scoring_hand[i].edition then
+                    if pseudorandom('gaydar') < (G.GAME.probabilities.normal / card.ability.extra.odds) then
+                        local gigacard = pseudorandom_element(G.hand.cards, "gaydar")
+                        gigacard:set_edition(context.scoring_hand[i].edition)
+                        gigacard:juice_up()
+                        SMODS.calculate_effect({message = "Shiny!", colour = G.C.SECONDARY_SET.Tarot}, card)
+                    end
+                end
+            end
         end
     end
 }
@@ -1120,13 +1127,13 @@ SMODS.Joker {
     key = "closet",
     loc_txt= {
         name = 'Walk-in Closet',
-        text = { "Discarded cards have a 1 in ? chance to gain an edition. (WIP)",
-        "{C:inactive,s:0.6}\"todo\""}
+        text = { "Discarded cards have a #2# in #1# chance to gain an {C:dark_edition}edition{}.",
+        "{C:inactive,s:0.6}\"Come out and play!\""} --coming out the closet, warriors, and the offspring
     },
     atlas = "prideJ",
-    pos = { x = 0, y = 0 },
-    rarity = 1,
-    cost = 2,
+    pos = { x = 1, y = 7 },
+    rarity = 2,
+    cost = 7,
     pools = {["Prideful"] = true},
     
     unlocked = true,
@@ -1135,15 +1142,19 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = { mult = 4 }, },
+    config = { extra = { odds = 12 }, },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.mult } }
+        return { vars = { card.ability.extra.odds, G.GAME.probabilities.normal } }
     end,
     calculate = function(self, card, context)
-        if context.joker_main then
-            return {
-                mult = card.ability.extra.mult
-            }
+        if context.discard and not context.other_card.edition then
+            if pseudorandom("closet") < (G.GAME.probabilities.normal / card.ability.extra.odds) then
+                context.other_card:set_edition(poll_edition('closet',nil,true,true), true, true)
+                return {
+                    message = "Shiny!",
+                    colour = G.C.SECONDARY_SET.Spectral
+                }
+            end
         end
     end
 }
@@ -1152,13 +1163,13 @@ SMODS.Joker {
     key = "bifocals",
     loc_txt= {
         name = 'Bi-focals',
-        text = { "Adds ?% of Mult to Chips, or ?% of Chips to Mult, whichever is higher.",
-        "{C:inactive,s:0.6}\"todo\""}
+        text = { "Adds {C:attention}10%{} of {C:mult}Mult {C:purple}to {C:chips}Chips{}, or {C:attention}10%{} of {C:chips}Chips {C:purple}to {C:mult}Mult{}, whichever is higher.",
+        "{C:inactive,s:0.6}\"The future's so bright...\""} --timbuk 3, "the future's so bright, i gotta wear shades"
     },
     atlas = "prideJ",
-    pos = { x = 0, y = 0 },
-    rarity = 1,
-    cost = 2,
+    pos = { x = 2, y = 7 },
+    rarity = 2,
+    cost = 7,
     pools = {["Prideful"] = true},
     
     unlocked = true,
@@ -1167,15 +1178,23 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = { mult = 4 }, },
+    config = { extra = { percent = 0.10 }},
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.mult } }
+        return { vars = { card.ability.extra.percent } }
     end,
     calculate = function(self, card, context)
         if context.joker_main then
-            return {
-                mult = card.ability.extra.mult
-            }
+            local chipdamage = hand_chips * card.ability.extra.percent
+            local multdamage = mult * card.ability.extra.percent
+            if chipdamage > multdamage then
+                return {
+                    mult = chipdamage
+                }
+            else
+                return {
+                    chips = multdamage
+                }
+            end
         end
     end
 }
@@ -1183,15 +1202,15 @@ SMODS.Joker {
 SMODS.Joker {
     key = "respectexistence",
     loc_txt= {
-        name = 'Respect Existence',
-        text = { "If a playing card would be destroyed,",
-        "copy it to your deck with a random edition (WIP)",
+        name = 'Respect Existence...',
+        text = { "If a playing card would be {C:hearts}destroyed{},",
+        "{C:attention}copy{} it to your deck with a random {C:dark_edition}edition{}.",
         "{C:inactive,s:0.6}\"Do no harm...\""}
     },
     atlas = "prideJ",
-    pos = { x = 0, y = 0 },
-    rarity = 1,
-    cost = 2,
+    pos = { x = 3, y = 7 },
+    rarity = 3,
+    cost = 9,
     pools = {["Prideful"] = true},
     
     unlocked = true,
@@ -1205,10 +1224,37 @@ SMODS.Joker {
         return { vars = { card.ability.extra.mult } }
     end,
     calculate = function(self, card, context)
-        if context.joker_main then
-            return {
-                mult = card.ability.extra.mult
-            }
+        if context.remove_playing_cards then
+            for k, val in ipairs(context.removed) do
+                G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+                local copy_card = copy_card(context.removed[k], nil, nil, G.playing_card)
+                copy_card:set_edition(poll_edition('respect',nil,true,true), true, true)
+                copy_card:add_to_deck()
+                G.deck.config.card_limit = G.deck.config.card_limit + 1
+                table.insert(G.playing_cards, copy_card)
+                G.hand:emplace(copy_card)
+                copy_card.states.visible = nil
+
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        copy_card:start_materialize()
+                        return true
+                    end
+                }))
+            end
+        end
+        if context.end_of_round and not context.blueprint then
+            local shinies = 0
+            for i = 1, #G.playing_cards do
+                if G.playing_cards[i].edition then
+                    shinies = shinies + 1
+                end
+            end
+            if shinies > 14 then
+                card:set_ability("j_pride_expectresistance")
+                card:juice_up()
+                card:set_cost()
+            end
         end
     end
 }
@@ -1216,38 +1262,23 @@ SMODS.Joker {
 SMODS.Joker { -- MOVE DOWN, SECRET, CONVERTS FROM ABOVE ON 15+ CARDS W EDITION IN DECK
     key = "expectresistance",
     loc_txt= {
-        name = 'Expect Resistance',
+        name = '...or Expect Resistance',
         text = { "Cards with editions cannot be debuffed.",
         "{C:inactive,s:0.6}\"...and take no shit.\""}
     },
-    atlas = "prideJ"
-    pos = { x = 0, y = 0 },
+    atlas = "prideJ",
+    pos = { x = 4, y = 7 },
     rarity = "pride_Secret",
-    cost = 2,
+    cost = 30,
     pools = {["Prideful"] = true},
     
     unlocked = true,
     discovered = true,
-    blueprint_compat = true,
+    blueprint_compat = false,
     eternal_compat = true,
     perishable_compat = true,
     no_collection = true,
-
-    config = { extra = { mult = 4 }, },
-    loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.mult } }
-    end,
-    calculate = function(self, card, context)
-        if context.joker_main then
-            return {
-                mult = card.ability.extra.mult
-            }
-        end
-    end
 }
-
-
-]]
 
 
 
