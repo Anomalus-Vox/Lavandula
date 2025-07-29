@@ -1168,8 +1168,8 @@ SMODS.Joker {
     },
     atlas = "prideJ",
     pos = { x = 2, y = 7 },
-    rarity = 2,
-    cost = 7,
+    rarity = 1,
+    cost = 5,
     pools = {["Prideful"] = true},
     
     unlocked = true,
@@ -1178,7 +1178,7 @@ SMODS.Joker {
     eternal_compat = true,
     perishable_compat = true,
 
-    config = { extra = { percent = 0.10 }},
+    config = { extra = { percent = 0.1 }},
     loc_vars = function(self, info_queue, card)
         return { vars = { card.ability.extra.percent } }
     end,
